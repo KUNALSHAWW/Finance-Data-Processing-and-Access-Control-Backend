@@ -1,5 +1,9 @@
 # Finance Ledger API
 
+[![CI](https://github.com/KUNALSHAWW/Finance-Data-Processing-and-Access-Control-Backend/actions/workflows/ci.yml/badge.svg)](https://github.com/KUNALSHAWW/Finance-Data-Processing-and-Access-Control-Backend/actions/workflows/ci.yml)
+
+**Live demo: https://finance-ledger-vwed.onrender.com** (no sign-up, one click per role)
+
 A finance backend (Spring Boot 3.5, Java 21, MySQL) with role-based access control and one idea most CRUD backends skip: **you can prove the data was not quietly changed.**
 
 Every change to a financial record or a user goes into a hash-chained audit ledger in the same database transaction. One endpoint, `GET /api/audit/verify`, re-checks the whole ledger and reports:
@@ -11,25 +15,32 @@ Every change to a financial record or a user goes into a hash-chained audit ledg
 
 On top of that, `GET /api/dashboard/insights` flags unusual transactions with an explainable statistic (no black-box model), and every flag carries its reason.
 
-## Try it in two minutes
+## Try it
+
+**Live:** open the demo, pick **Enter as Admin**, go to the **Tamper Lab** tab and follow the three steps: verify (green), edit the database directly (a confirmation modal explains what it does), verify again (red, naming the exact row).
+
+The API runs on free hosting that sleeps after 15 minutes idle. The page wakes it as soon as you arrive (the chip in the header shows progress), usually well under a minute. Sample data is synthetic, public by design, and resets itself every 30 minutes.
+
+**Locally with Docker (MySQL 8):**
 
 ```bash
 cp .env.example .env        # set DB_PASSWORD, JWT_SECRET (32+ chars), BOOTSTRAP_ADMIN_PASSWORD
-docker compose up --build
+docker compose up --build   # API on http://localhost:8080, Swagger at /swagger-ui/index.html
 ```
 
-Open http://localhost:8080/swagger-ui/index.html, log in with `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD` (the first admin is created automatically on an empty database, no code edits), then click **Authorize** and paste the token.
-
-The tamper demo:
-
-```bash
-# 1. create a record through the API, then verify: {"valid": true, ...}
-# 2. change it behind the API's back:
-docker compose exec db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" finance_db -e "update financial_records set amount = 1 where id = 1"'
-# 3. verify again: {"valid": false, "findings": [{"entityType":"RECORD","entityId":1,"problem":"MODIFIED"}]}
-```
+The first admin is created automatically on an empty database from `BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD`, no code edits. To use the web console against your local API, serve `web/` (for example `python -m http.server 5500 --directory web`), set `apiBase` in `web/config.js` to `http://localhost:8080`, and add `http://localhost:5500` to `CORS_ALLOWED_ORIGINS`.
 
 Without Docker: Java 21, Maven, a MySQL 8 database, then set `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`, `JWT_SECRET` and run `./mvnw spring-boot:run`. Configuration is environment-only; no secrets live in the repo.
+
+## What is in the box
+
+| Part | What it is |
+|---|---|
+| `src/` | Spring Boot API: auth, users, records, dashboard, audit ledger, anomaly insights |
+| `web/` | Static front end (plain HTML, CSS and JS, no build step): role-based console, Tamper Lab, dark mode, search (`/`), mobile menu, confirmation modals, form validation states, copy buttons, print stylesheet |
+| `Dockerfile`, `docker-compose.yml` | API image, and API plus MySQL 8 |
+| `.github/workflows/ci.yml` | `mvn verify` on every push |
+| `postman_collection/` | Collection with a login script that stores the token (no credentials inside) |
 
 ## Roles
 
@@ -47,6 +58,7 @@ Each cell below is an automated test (`AccessControlTest.roleMatrix`).
 | Method | Path | Access |
 |---|---|---|
 | POST | `/api/auth/login` | public |
+| GET | `/api/auth/me` | any signed-in user |
 | POST, GET | `/api/users`, `/api/users/{id}` | Admin |
 | PUT | `/api/users/{id}/activate`, `/deactivate` | Admin |
 | DELETE | `/api/users/{id}` | Admin |
@@ -55,6 +67,8 @@ Each cell below is an automated test (`AccessControlTest.roleMatrix`).
 | GET | `/api/dashboard/summary`, `/api/dashboard/trends` | all roles |
 | GET | `/api/dashboard/insights` | Admin, Analyst |
 | GET | `/api/audit`, `/api/audit/verify` | Admin, Analyst |
+| GET, POST | `/api/public/config`, `/api/public/visit` | public |
+| POST | `/api/demo/tamper`, `/api/demo/reset` | Admin, demo mode only |
 
 `GET /api/records` takes `page`, `size` (1-100), `type`, `category`, `from`, `to`. Records are soft-deleted and listed newest first. Errors always use one JSON shape: `{"error": "...", "message": "...", "fieldErrors": {...}}`.
 
@@ -84,16 +98,28 @@ It is a heuristic for "look at this", not a fraud verdict.
 - Schema is owned by Flyway (`V1__init.sql`); Hibernate runs in `validate` mode, so entity and schema drift fails at startup instead of silently altering tables.
 - CORS is off unless `CORS_ALLOWED_ORIGINS` is set. Set `DOCS_ENABLED=false` to hide Swagger in production.
 - Optimistic locking on records: two admins editing the same record get a 409 instead of a silent overwrite.
+- The web console renders all data with text nodes (never `innerHTML`), and ships a Content Security Policy that only allows its own scripts and the API origin.
 
 **Known limitations.** No refresh tokens or logout/revocation list (deactivation is the revocation mechanism). Lockout is per account, not per IP, so it does not slow a credential-stuffing run across many accounts. Audit writes are serialized by one row lock (fine at this scale; shard per entity type if write volume demands it). Dashboard trends and `verify` are full scans bounded by batch size, not incremental.
+
+## Public demo mode
+
+`SPRING_PROFILES_ACTIVE=demo` (or `app.demo.enabled=true`) turns on a self-resetting sandbox. It is off by default and none of it is registered otherwise (a test checks that `/api/demo/*` returns 404).
+
+- An in-memory database is seeded at start with six months of synthetic data, through the normal services so the audit ledger is consistent, and reset every 30 minutes.
+- `POST /api/demo/tamper` edits the largest expense with raw SQL, so the ledger can be shown catching it. `POST /api/demo/reset` restores everything.
+- Safeguards for a public deployment: user management is read-only (so strangers cannot lock the sample accounts), records are capped at 400, and lockout is disabled because the demo passwords are public.
+- Visits: the page reports only the `utm_*` labels of a tagged link to `POST /api/public/visit`, which writes one log line. No cookies, no IP addresses, no identifiers, and a notice on the page lets visitors opt out. Use links like `.../?utm_source=resume&utm_campaign=<company>` to see which one was opened.
+
+**Hosting notes.** The live demo runs the API as a Docker web service and `web/` as a static site on Render's free plan. It uses the in-memory database because free hosting has no durable one: Render's free Postgres expires after 30 days and allows one per workspace. The same Flyway migration runs on MySQL 8 in Docker Compose and on H2 in the tests. For a persistent deployment, drop the demo profile and point `DB_URL` at a MySQL instance.
 
 ## Architecture
 
 ```
-controller  ->  service  ->  repository  ->  MySQL
-   |              |
-   |              +--> AuditService (hash chain, verify)
-   |              +--> AnomalyDetector (pure function)
+web/ (static console) --HTTPS+JWT--> controller -> service -> repository -> MySQL
+                                        |            |
+                                        |            +--> AuditService (hash chain, verify)
+                                        |            +--> AnomalyDetector (pure function)
 JwtFilter -> SecurityContext -> @PreAuthorize
 ```
 
@@ -101,25 +127,27 @@ JwtFilter -> SecurityContext -> @PreAuthorize
 src/main/java/com/kunal/finance/backend/
   config/      security chain, Swagger, first-admin bootstrap
   security/    JwtUtil, JwtFilter, user details
-  controller/  Auth, Users, Records, Dashboard, Audit
+  controller/  Auth, Users, Records, Dashboard, Audit, Public
   service/     business rules
   audit/       hash chain + verification
   insights/    anomaly detection
+  demo/        demo-mode seed, tamper, reset, safeguards
   entity/ repository/ dto/ exception/
 src/main/resources/db/migration/V1__init.sql
+web/           index.html, styles.css, print.css, app.js, theme.js, config.js
 ```
 
 ## Tests
 
 ```bash
-mvn verify        # 55 tests, H2 in MySQL mode, runs the same Flyway migration
+mvn verify        # 65 tests, H2 in MySQL mode, runs the same Flyway migration
 ```
 
-They cover the full role matrix, 401/403/429 behavior, deactivated-token handling, validation and status codes, exact decimal totals (including a category with both income and expense), soft delete, every tampering scenario above, concurrent audit writes, the anomaly math, and first-admin bootstrap. CI runs `mvn verify` on every push (`.github/workflows/ci.yml`). The test database is H2, so the app was also run end to end against MySQL 8 with Docker Compose to check the real migration and `validate` mode.
+They cover the full role matrix, 401/403/429 behavior, deactivated-token handling, validation and status codes, exact decimal totals (including a category with both income and expense), soft delete, every tampering scenario above, concurrent audit writes, the anomaly math, first-admin bootstrap, and the demo mode (seed, tamper then verify then reset, safeguards, visit counter). CI runs `mvn verify` on every push. The test database is H2, so the app was also run end to end against MySQL 8 with Docker Compose to check the real migration and `validate` mode.
 
 ## What changed from v0.1
 
-The first version had these defects, all fixed and covered by tests: record listing crashed for everyone (`hasRole('ADMIN','ANALYST')`); deactivated users could still log in and use tokens; no way to create the first admin without editing code; 401 was actually 403; a user without a role broke authentication; the record `date` was ignored; the README, Swagger and code disagreed on who may do what; category totals added income and expense together; plain `RuntimeException`s returned 500; money was a `Double`; page size was unbounded; admins could delete themselves; the dashboard loaded the whole table into memory; and the Postman collection contained real-looking credentials and a signed token. The old Swagger screenshots were removed because they showed the previous API.
+The first version had these defects, all fixed and covered by tests: record listing crashed for everyone (`hasRole('ADMIN','ANALYST')`); deactivated users could still log in and use tokens; no way to create the first admin without editing code; 401 was actually 403; a user without a role broke authentication; the record `date` was ignored; the README, Swagger and code disagreed on who may do what; category totals added income and expense together; plain `RuntimeException`s returned 500; money was a `Double`; page size was unbounded; admins could delete themselves; the dashboard loaded the whole table into memory; and the Postman collection contained real-looking credentials and a signed token.
 
 ## License
 
