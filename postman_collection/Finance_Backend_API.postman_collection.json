@@ -1,54 +1,59 @@
 {
   "info": {
-    "_postman_id": "ca7100fe-2dfe-4791-862c-47dc7f46f811",
-    "name": "Finance Backend API",
-    "description": "## Finance Backend API\n\nThis collection covers the core backend API endpoints for a Finance application. It is organized around three main functional areas:\n\n### Authentication\n- **Login** — Authenticate users and obtain access tokens required for secured endpoints.\n\n### User Management\n- **Create Users** — Register new users in the system.\n- **Get All Users** — Retrieve a paginated list of all registered users.\n- **Activate / Deactivate User** — Toggle the active status of a specific user by their ID.\n\n### Financial Records\n- **Create Records** — Add new financial records to the system.\n- **Get All Records** — Retrieve financial records with pagination support.\n- **Update a Record** — Modify an existing financial record by ID.\n- **Delete Record by ID** — Remove a specific financial record from the system.\n\n### Dashboard\n- **Dashboard Summary** — Fetch an aggregated summary of financial data for display on the application dashboard.\n\n---\n\nAll requests are built against a configurable `{{baseURL}}` environment variable, making it straightforward to switch between development, staging, and production environments.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "45447523",
-    "_collection_link": "https://go.postman.co/collection/45447523-ca7100fe-2dfe-4791-862c-47dc7f46f811?source=collection_link"
+    "name": "Finance Ledger API",
+    "description": "Set adminEmail/adminPassword (the bootstrap admin), run Login first; it stores the token in the collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseURL",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "adminEmail",
+      "value": ""
+    },
+    {
+      "key": "adminPassword",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "recordId",
+      "value": ""
+    }
+  ],
   "item": [
     {
-      "name": "Login",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "  {\r\n    \"email\": \"anuj2002@gmail.com\",\r\n    \"password\": \"2002\"\r\n  }",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/auth/login",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "auth",
-            "login"
-          ]
-        }
-      },
-      "response": [
+      "name": "Authentication",
+      "item": [
         {
           "name": "Login",
-          "originalRequest": {
+          "request": {
             "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "  {\r\n    \"email\": \"ak1952002@gmail.com\",\r\n    \"password\": \"Anujkumar@2002\"\r\n  }",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
               }
-            },
+            ],
             "url": {
               "raw": "{{baseURL}}/api/auth/login",
               "host": [
@@ -59,225 +64,43 @@
                 "auth",
                 "login"
               ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
             },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Content-Length",
-              "value": "204"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 08:50:30 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"token\": \"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhazE5NTIwMDJAZ21haWwuY29tIiwiaWF0IjoxNzc1MTE5ODMwLCJleHAiOjE3NzUyMDYyMzB9.1uBYF1dvYPSDdK1yh7ev7ZsGvtAbSGFlXBBYxlacnrLyc7M44-E7zgfDECA1cl0Wpqz67qXJj93EZJbdwOJLMA\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Create Admin user",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/users",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": [
-        {
-          "name": "Create Admin user for the first time",
-          "originalRequest": {
-            "method": "POST",
-            "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
             },
-            "url": {
-              "raw": "{{baseURL}}/api/users",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "users"
-              ]
+            "auth": {
+              "type": "noauth"
             }
           },
-          "status": "Created",
-          "code": 201,
-          "_postman_previewlanguage": null,
-          "header": [
+          "event": [
             {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 16:41:38 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login ok', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
             }
-          ],
-          "cookie": [],
-          "body": "{\n    \"active\": true,\n    \"email\": \"ak1952002@gmail.com\",\n    \"id\": 1,\n    \"name\": \"Anuj Kumar\",\n    \"role\": \"ADMIN\"\n}"
+          ]
         }
       ]
     },
     {
-      "name": "Create Simple Users",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"name\": \"Abhay Kumar\",\r\n  \"email\": \"abhayynr2002@gmail.com\",\r\n  \"password\": \"Abhaykumar@2002\",\r\n  \"role\": \"ANALYST\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/users",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": [
+      "name": "User Management (Admin)",
+      "item": [
         {
-          "name": "Create Simple Users",
-          "originalRequest": {
+          "name": "Create user",
+          "request": {
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"name\": \"Abhay Kumar\",\r\n  \"email\": \"abhayynr2002@gmail.com\",\r\n  \"password\": \"Abhaykumar@2002\",\r\n  \"role\": \"ANALYST\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{baseURL}}/api/users",
               "host": [
@@ -287,314 +110,140 @@
                 "api",
                 "users"
               ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ana Analyst\",\n  \"email\": \"analyst@example.com\",\n  \"password\": \"Passw0rd@1\",\n  \"role\": \"ANALYST\"\n}"
             }
           },
-          "status": "Created",
-          "code": 201,
-          "_postman_previewlanguage": null,
-          "header": [
+          "event": [
             {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 16:44:15 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set('userId', pm.response.json().id);"
+                ]
+              }
             }
-          ],
-          "cookie": [],
-          "body": "{\n    \"active\": true,\n    \"email\": \"abhayynr2002@gmail.com\",\n    \"id\": 2,\n    \"name\": \"Abhay Kumar\",\n    \"role\": \"ANALYST\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get User",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/users/1",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "1"
           ]
-        }
-      },
-      "response": [
+        },
         {
-          "name": "Get a specific user by id",
-          "originalRequest": {
+          "name": "List users",
+          "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/1",
+              "raw": "{{baseURL}}/api/users?page=0&size=20",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get user",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/users/{{userId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
                 "users",
-                "1"
+                "{{userId}}"
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 17:34:13 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"id\": 1,\n    \"name\": \"Anuj Kumar\",\n    \"email\": \"ak1952002@gmail.com\",\n    \"role\": \"ADMIN\",\n    \"active\": true\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get All Users",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
           }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/users",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": [
+        },
         {
-          "name": "Get All Users",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
+          "name": "Deactivate user",
+          "request": {
+            "method": "PUT",
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users",
+              "raw": "{{baseURL}}/api/users/{{userId}}/deactivate",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users"
+                "users",
+                "{{userId}}",
+                "deactivate"
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 05:27:07 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
+          }
+        },
+        {
+          "name": "Activate user",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/users/{{userId}}/activate",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "activate"
+              ]
             }
-          ],
-          "cookie": [],
-          "body": "[\n    {\n        \"id\": 1,\n        \"name\": \"Anuj Kumar\",\n        \"email\": \"ak1952002@gmail.com\",\n        \"role\": \"ADMIN\",\n        \"active\": true\n    },\n    {\n        \"id\": 2,\n        \"name\": \"Abhay Kumar\",\n        \"email\": \"abhayynr2002@gmail.com\",\n        \"role\": \"ANALYST\",\n        \"active\": true\n    },\n    {\n        \"id\": 3,\n        \"name\": \"Ajay Kumar\",\n        \"email\": \"ajayynr2004@gmail.com\",\n        \"role\": \"VIEWER\",\n        \"active\": true\n    },\n    {\n        \"id\": 4,\n        \"name\": \"Karan Kumar\",\n        \"email\": \"karanynr2003@gmail.com\",\n        \"role\": \"ANALYST\",\n        \"active\": true\n    }\n]"
+          }
+        },
+        {
+          "name": "Delete user",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/users/{{userId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            }
+          }
         }
       ]
     },
     {
-      "name": "create records",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"amount\": 1200,\r\n  \"type\": \"EXPENSE\",\r\n  \"category\": \"Shopping\",\r\n  \"description\": \"Clothes\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{baseURL}}/api/records",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "records"
-          ]
-        }
-      },
-      "response": [
+      "name": "Financial Records",
+      "item": [
         {
-          "name": "income record",
-          "originalRequest": {
+          "name": "Create record (Admin)",
+          "request": {
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"amount\": 5000,\r\n  \"type\": \"INCOME\",\r\n  \"category\": \"Salary\",\r\n  \"description\": \"Monthly salary\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
             "url": {
               "raw": "{{baseURL}}/api/records",
               "host": [
@@ -604,274 +253,31 @@
                 "api",
                 "records"
               ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
             },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Content-Length",
-              "value": "145"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 08:57:04 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"amount\": 5000,\n    \"category\": \"Salary\",\n    \"createdBy\": \"ak1952002@gmail.com\",\n    \"date\": \"2026-04-01\",\n    \"description\": \"Monthly salary\",\n    \"id\": 4,\n    \"type\": \"INCOME\"\n}"
-        },
-        {
-          "name": "expense records",
-          "originalRequest": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"amount\": 1200,\r\n  \"type\": \"EXPENSE\",\r\n  \"category\": \"Shopping\",\r\n  \"description\": \"Clothes\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/records",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "records"
-              ]
+              "raw": "{\n  \"amount\": 1200.5,\n  \"type\": \"INCOME\",\n  \"category\": \"Salary\",\n  \"date\": \"2026-04-01\",\n  \"description\": \"April salary\"\n}"
             }
           },
-          "status": "Created",
-          "code": 201,
-          "_postman_previewlanguage": null,
-          "header": [
+          "event": [
             {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 18:08:10 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"amount\": 1200,\n    \"category\": \"Shopping\",\n    \"createdAt\": \"2026-04-02T23:38:10.652279\",\n    \"createdBy\": \"ak1952002@gmail.com\",\n    \"description\": \"Clothes\",\n    \"id\": 11,\n    \"type\": \"EXPENSE\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Get All Records",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ANALYST_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/records?page=0&size=5",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "records"
-          ],
-          "query": [
-            {
-              "key": "page",
-              "value": "0"
-            },
-            {
-              "key": "size",
-              "value": "5"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set('recordId', pm.response.json().id);"
+                ]
+              }
             }
           ]
-        }
-      },
-      "response": [
-        {
-          "name": "Get ALL Records",
-          "originalRequest": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ANALYST_TOKEN}}",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseURL}}/api/records",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "records"
-              ]
-            }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": "",
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 05:18:32 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [
-            {
-              "expires": "Invalid Date",
-              "domain": "",
-              "path": ""
-            }
-          ],
-          "body": "[\n    {\n        \"id\": 1,\n        \"amount\": 10000,\n        \"type\": \"INCOME\",\n        \"category\": \"Salary\",\n        \"createdAt\": \"2026-04-02T23:30:54.245085\",\n        \"description\": \"Monthly salary\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 2,\n        \"amount\": 2500,\n        \"type\": \"INCOME\",\n        \"category\": \"Freelance\",\n        \"createdAt\": \"2026-04-02T23:31:28.479603\",\n        \"description\": \"Side project\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 4,\n        \"amount\": 1800,\n        \"type\": \"INCOME\",\n        \"category\": \"Bonus\",\n        \"createdAt\": \"2026-04-02T23:34:01.446743\",\n        \"description\": \"Performance bonus\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 5,\n        \"amount\": 3000,\n        \"type\": \"INCOME\",\n        \"category\": \"Investment\",\n        \"createdAt\": \"2026-04-02T23:34:33.225673\",\n        \"description\": \"Stock returns\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 6,\n        \"amount\": 800,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Entertainment\",\n        \"createdAt\": \"2026-04-02T23:35:21.90036\",\n        \"description\": \"Movies\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 7,\n        \"amount\": 500,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Transport\",\n        \"createdAt\": \"2026-04-02T23:35:39.002465\",\n        \"description\": \"Fuel\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 8,\n        \"amount\": 3000,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Rent\",\n        \"createdAt\": \"2026-04-02T23:35:48.362538\",\n        \"description\": \"Monthly rent\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 9,\n        \"amount\": 2000,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Food\",\n        \"createdAt\": \"2026-04-02T23:37:17.534633\",\n        \"description\": \"Groceries\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 10,\n        \"amount\": 700,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Utilities\",\n        \"createdAt\": \"2026-04-02T23:37:54.00431\",\n        \"description\": \"Electricity bill\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    },\n    {\n        \"id\": 11,\n        \"amount\": 1200,\n        \"type\": \"EXPENSE\",\n        \"category\": \"Shopping\",\n        \"createdAt\": \"2026-04-02T23:38:10.652279\",\n        \"description\": \"Clothes\",\n        \"createdBy\": \"ak1952002@gmail.com\"\n    }\n]"
         },
         {
-          "name": "Get Records by page, size and type",
-          "originalRequest": {
+          "name": "List records",
+          "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ANALYST_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/records?page=0&size=2&type=INCOME",
+              "raw": "{{baseURL}}/api/records?page=0&size=10",
               "host": [
                 "{{baseURL}}"
               ],
@@ -886,415 +292,120 @@
                 },
                 {
                   "key": "size",
-                  "value": "2"
-                },
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List records (filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/records?type=EXPENSE&category=Food&from=2026-04-01&to=2026-04-30",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "records"
+              ],
+              "query": [
                 {
                   "key": "type",
-                  "value": "INCOME",
-                  "type": "text"
+                  "value": "EXPENSE"
+                },
+                {
+                  "key": "category",
+                  "value": "Food"
+                },
+                {
+                  "key": "from",
+                  "value": "2026-04-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-04-30"
                 }
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 06:23:22 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"data\": [\n        {\n            \"id\": 1,\n            \"amount\": 10000,\n            \"type\": \"INCOME\",\n            \"category\": \"Salary\",\n            \"createdAt\": \"2026-04-02T23:30:54.245085\",\n            \"description\": \"Monthly salary\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        },\n        {\n            \"id\": 2,\n            \"amount\": 2500,\n            \"type\": \"INCOME\",\n            \"category\": \"Freelance\",\n            \"createdAt\": \"2026-04-02T23:31:28.479603\",\n            \"description\": \"Side project\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        }\n    ],\n    \"currentPage\": 0,\n    \"totalPages\": 2,\n    \"totalElements\": 4\n}"
+          }
         },
         {
-          "name": "Get Records by page and size",
-          "originalRequest": {
+          "name": "Get record",
+          "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ANALYST_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/records?page=0&size=5",
+              "raw": "{{baseURL}}/api/records/{{recordId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "records"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "5"
-                }
+                "records",
+                "{{recordId}}"
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 06:25:37 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"data\": [\n        {\n            \"id\": 1,\n            \"amount\": 10000,\n            \"type\": \"INCOME\",\n            \"category\": \"Salary\",\n            \"createdAt\": \"2026-04-02T23:30:54.245085\",\n            \"description\": \"Monthly salary\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        },\n        {\n            \"id\": 2,\n            \"amount\": 2500,\n            \"type\": \"INCOME\",\n            \"category\": \"Freelance\",\n            \"createdAt\": \"2026-04-02T23:31:28.479603\",\n            \"description\": \"Side project\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        },\n        {\n            \"id\": 4,\n            \"amount\": 1800,\n            \"type\": \"INCOME\",\n            \"category\": \"Bonus\",\n            \"createdAt\": \"2026-04-02T23:34:01.446743\",\n            \"description\": \"Performance bonus\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        },\n        {\n            \"id\": 5,\n            \"amount\": 3000,\n            \"type\": \"INCOME\",\n            \"category\": \"Investment\",\n            \"createdAt\": \"2026-04-02T23:34:33.225673\",\n            \"description\": \"Stock returns\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        },\n        {\n            \"id\": 6,\n            \"amount\": 800,\n            \"type\": \"EXPENSE\",\n            \"category\": \"Entertainment\",\n            \"createdAt\": \"2026-04-02T23:35:21.90036\",\n            \"description\": \"Movies\",\n            \"createdBy\": \"ak1952002@gmail.com\"\n        }\n    ],\n    \"currentPage\": 0,\n    \"totalPages\": 2,\n    \"totalElements\": 10\n}"
-        }
-      ]
-    },
-    {
-      "name": "Update a Record",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"amount\": 9999,\r\n  \"type\": \"INCOME\",\r\n  \"category\": \"Salary\",\r\n  \"description\": \"Updated test record\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
           }
         },
-        "url": {
-          "raw": "{{baseURL}}/api/records/3",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "records",
-            "3"
-          ]
-        }
-      },
-      "response": [
         {
-          "name": "Update one Record fully by id",
-          "originalRequest": {
+          "name": "Update record (Admin)",
+          "request": {
             "method": "PUT",
             "header": [
               {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
+                "key": "Content-Type",
+                "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseURL}}/api/records/{{recordId}}",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "records",
+                "{{recordId}}"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\r\n  \"amount\": 9999,\r\n  \"type\": \"INCOME\",\r\n  \"category\": \"Salary\",\r\n  \"description\": \"Updated test record\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{baseURL}}/api/records/3",
-              "host": [
-                "{{baseURL}}"
-              ],
-              "path": [
-                "api",
-                "records",
-                "3"
-              ]
+              "raw": "{\n  \"amount\": 1300.0,\n  \"type\": \"INCOME\",\n  \"category\": \"Salary\",\n  \"date\": \"2026-04-01\"\n}"
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 11:30:04 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"id\": 3,\n    \"amount\": 9999,\n    \"type\": \"INCOME\",\n    \"category\": \"Salary\",\n    \"date\": \"2026-04-03T16:41:55.443445\",\n    \"description\": \"Updated test record\",\n    \"createdBy\": \"ak1952002@gmail.com\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "delete record by id",
-      "request": {
-        "auth": {
-          "type": "noauth"
+          }
         },
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/records/1",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "records",
-            "1"
-          ]
-        }
-      },
-      "response": [
         {
-          "name": "delete record by id",
-          "originalRequest": {
+          "name": "Delete record (Admin, soft)",
+          "request": {
             "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/records/1",
+              "raw": "{{baseURL}}/api/records/{{recordId}}",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
                 "records",
-                "1"
+                "{{recordId}}"
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "text/plain;charset=UTF-8"
-            },
-            {
-              "key": "Content-Length",
-              "value": "20"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 08:53:44 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "Deleted successfully"
+          }
         }
       ]
     },
     {
-      "name": "dashboard summary",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
-          }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/dashboard/summary",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "dashboard",
-            "summary"
-          ]
-        }
-      },
-      "response": [
+      "name": "Dashboard",
+      "item": [
         {
-          "name": "dashboard summary",
-          "originalRequest": {
+          "name": "Summary",
+          "request": {
             "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
+            "header": [],
             "url": {
               "raw": "{{baseURL}}/api/dashboard/summary",
               "host": [
@@ -1306,463 +417,146 @@
                 "summary"
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Thu, 02 Apr 2026 18:11:16 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"categoryTotals\": {\n        \"Salary\": 10000,\n        \"Utilities\": 700,\n        \"Entertainment\": 800,\n        \"Freelance\": 2500,\n        \"Bonus\": 1800,\n        \"Shopping\": 1200,\n        \"Transport\": 500,\n        \"Food\": 2000,\n        \"Rent\": 3000,\n        \"Investment\": 3000\n    },\n    \"netBalance\": 9100,\n    \"totalExpense\": 8200,\n    \"totalIncome\": 17300\n}"
-        }
-      ]
-    },
-    {
-      "name": "Deactivate User",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}"
         },
-        "url": {
-          "raw": "{{baseURL}}/api/users/4/deactivate",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "4",
-            "deactivate"
-          ]
-        }
-      },
-      "response": [
         {
-          "name": "Deactivate User by id",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}"
-            },
+          "name": "Summary (date range)",
+          "request": {
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/4/deactivate",
+              "raw": "{{baseURL}}/api/dashboard/summary?from=2026-04-01&to=2026-04-30",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
-                "4",
-                "deactivate"
+                "dashboard",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-04-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-04-30"
+                }
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 05:46:34 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"error\": \"SUCCESS\",\n    \"message\": \"User deactivated successfully\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Activate User",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_TOKEN}}",
-            "type": "text"
           }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}"
         },
-        "url": {
-          "raw": "{{baseURL}}/api/users/4/activate",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "4",
-            "activate"
-          ]
-        }
-      },
-      "response": [
         {
-          "name": "Activate user by Id",
-          "originalRequest": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_TOKEN}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n  \"name\": \"Anuj Kumar\",\r\n  \"email\": \"ak1952002@gmail.com\",\r\n  \"password\": \"Anujkumar@2002\",\r\n  \"role\": \"ADMIN\"\r\n}"
-            },
+          "name": "Monthly trends",
+          "request": {
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/4/activate",
+              "raw": "{{baseURL}}/api/dashboard/trends?months=12",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
-                "4",
-                "activate"
+                "dashboard",
+                "trends"
+              ],
+              "query": [
+                {
+                  "key": "months",
+                  "value": "12"
+                }
               ]
             }
-          },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
-            {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 05:47:35 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
-            }
-          ],
-          "cookie": [],
-          "body": "{\n    \"error\": \"SUCCESS\",\n    \"message\": \"User is already active\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "Delete a User",
-      "request": {
-        "auth": {
-          "type": "noauth"
-        },
-        "method": "DELETE",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "{{ADMIN_T2}}",
-            "type": "text"
           }
-        ],
-        "url": {
-          "raw": "{{baseURL}}/api/users/4/delete",
-          "host": [
-            "{{baseURL}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "4",
-            "delete"
-          ]
-        }
-      },
-      "response": [
+        },
         {
-          "name": "Delete User by ID",
-          "originalRequest": {
-            "method": "DELETE",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "{{ADMIN_T2}}",
-                "type": "text"
-              }
-            ],
+          "name": "Anomaly insights (Admin, Analyst)",
+          "request": {
+            "method": "GET",
+            "header": [],
             "url": {
-              "raw": "{{baseURL}}/api/users/4/delete",
+              "raw": "{{baseURL}}/api/dashboard/insights?months=12",
               "host": [
                 "{{baseURL}}"
               ],
               "path": [
                 "api",
-                "users",
-                "4",
-                "delete"
+                "dashboard",
+                "insights"
+              ],
+              "query": [
+                {
+                  "key": "months",
+                  "value": "12"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Ledger (Admin, Analyst)",
+      "item": [
+        {
+          "name": "List audit entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/audit?page=0&size=20",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify ledger",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseURL}}/api/audit/verify",
+              "host": [
+                "{{baseURL}}"
+              ],
+              "path": [
+                "api",
+                "audit",
+                "verify"
               ]
             }
           },
-          "status": "OK",
-          "code": 200,
-          "_postman_previewlanguage": null,
-          "header": [
+          "event": [
             {
-              "key": "X-Content-Type-Options",
-              "value": "nosniff"
-            },
-            {
-              "key": "X-XSS-Protection",
-              "value": "0"
-            },
-            {
-              "key": "Cache-Control",
-              "value": "no-cache, no-store, max-age=0, must-revalidate"
-            },
-            {
-              "key": "Pragma",
-              "value": "no-cache"
-            },
-            {
-              "key": "Expires",
-              "value": "0"
-            },
-            {
-              "key": "X-Frame-Options",
-              "value": "DENY"
-            },
-            {
-              "key": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "key": "Transfer-Encoding",
-              "value": "chunked"
-            },
-            {
-              "key": "Date",
-              "value": "Fri, 03 Apr 2026 14:03:45 GMT"
-            },
-            {
-              "key": "Keep-Alive",
-              "value": "timeout=60"
-            },
-            {
-              "key": "Connection",
-              "value": "keep-alive"
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('ledger valid', () => pm.expect(pm.response.json().valid).to.be.true);"
+                ]
+              }
             }
-          ],
-          "cookie": [],
-          "body": "{\n    \"error\": \"SUCCESS\",\n    \"message\": \"User deleted successfully\"\n}"
+          ]
         }
       ]
-    }
-  ],
-  "auth": {
-    "type": "jwt",
-    "jwt": [
-      {
-        "key": "secret",
-        "value": "{{SECRET}}",
-        "type": "string"
-      },
-      {
-        "key": "payload",
-        "value": "{\r\n  \"sub\": \"ak1952002@gmail.com\",\r\n  \"iat\": 1775238047,\r\n  \"exp\": 1775324447\r\n}",
-        "type": "string"
-      },
-      {
-        "key": "isSecretBase64Encoded",
-        "value": false,
-        "type": "boolean"
-      },
-      {
-        "key": "algorithm",
-        "value": "HS256",
-        "type": "string"
-      },
-      {
-        "key": "addTokenTo",
-        "value": "header",
-        "type": "string"
-      },
-      {
-        "key": "headerPrefix",
-        "value": "Bearer",
-        "type": "string"
-      },
-      {
-        "key": "queryParamKey",
-        "value": "token",
-        "type": "string"
-      },
-      {
-        "key": "header",
-        "value": "{}",
-        "type": "string"
-      }
-    ]
-  },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "packages": {},
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
     }
   ]
 }

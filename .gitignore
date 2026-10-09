@@ -65,7 +65,6 @@ ehthumbs.db
 Thumbs.db
 
 # Application properties (contains sensitive data)
-src/main/resources/application.properties
 src/main/resources/application-dev.properties
 src/main/resources/application-prod.properties
 
@@ -85,3 +84,4 @@ rebel.xml
 
 # Spring Boot DevTools
 spring-boot-devtools.log
+src/main/resources/application-local.properties

@@ -1,117 +1,105 @@
 package com.kunal.finance.backend.exception;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.kunal.finance.backend.dto.ErrorResponse;
+import com.kunal.finance.backend.dto.Dtos.ErrorResponse;
 
-import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Extends ResponseEntityExceptionHandler so framework errors (bad enum in a query string, wrong HTTP method,
+ * unknown path, malformed JSON) keep their correct 4xx status instead of falling into the catch-all 500.
+ * Every body uses the same ErrorResponse shape.
+ */
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-        @ExceptionHandler(BadCredentialsException.class)
-        public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException ex) {
-                log.warn("Authentication failed");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body(ErrorResponse.builder()
-                                                .error("UNAUTHORIZED")
-                                                .message("Invalid email or password")
-                                                .build());
-        }
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers,
+            HttpStatusCode status, WebRequest request) {
+        String message = body instanceof ProblemDetail pd && pd.getDetail() != null ? pd.getDetail() : "Request failed";
+        return ResponseEntity.status(status).headers(headers).body(ErrorResponse.of(codeOf(status), message));
+    }
 
-        @ExceptionHandler(ResourceNotFoundException.class)
-        public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
-                log.warn("Resource not found: {}", ex.getMessage());
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                                .body(ErrorResponse.builder()
-                                                .error("NOT_FOUND")
-                                                .message(ex.getMessage())
-                                                .build());
-        }
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        Map<String, String> fields = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(e -> fields.putIfAbsent(e.getField(), e.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(new ErrorResponse("VALIDATION_FAILED", "Request validation failed", fields));
+    }
 
-        @ExceptionHandler(AccessDeniedException.class)
-        public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex) {
-                log.warn("Access denied: {}", ex.getMessage());
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(ErrorResponse.builder()
-                                                .error("FORBIDDEN")
-                                                .message(ex.getMessage())
-                                                .build());
-        }
+    @ExceptionHandler(BadCredentialsException.class)
+    ResponseEntity<ErrorResponse> badCredentials(BadCredentialsException ex) {
+        return build(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Invalid email or password");
+    }
 
-        @ExceptionHandler(MethodArgumentNotValidException.class)
-        public ResponseEntity<?> handleValidation(MethodArgumentNotValidException ex) {
+    @ExceptionHandler(DisabledException.class)
+    ResponseEntity<ErrorResponse> disabled(DisabledException ex) {
+        return build(HttpStatus.FORBIDDEN, "ACCOUNT_DISABLED", "Account is disabled");
+    }
 
-                log.warn("Validation failed");
+    @ExceptionHandler(TooManyAttemptsException.class)
+    ResponseEntity<ErrorResponse> tooMany(TooManyAttemptsException ex) {
+        return build(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_ATTEMPTS", ex.getMessage());
+    }
 
-                Map<String, String> errors = new HashMap<>();
+    @ExceptionHandler(AccessDeniedException.class)
+    ResponseEntity<ErrorResponse> accessDenied(AccessDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "You do not have permission to perform this action");
+    }
 
-                ex.getBindingResult().getFieldErrors()
-                                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
+    @ExceptionHandler(ResourceNotFoundException.class)
+    ResponseEntity<ErrorResponse> notFound(ResourceNotFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.getMessage());
+    }
 
-                return ResponseEntity.badRequest().body(errors);
-        }
+    @ExceptionHandler(ConflictException.class)
+    ResponseEntity<ErrorResponse> conflict(ConflictException ex) {
+        return build(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage());
+    }
 
-        @ExceptionHandler(HttpMessageNotReadableException.class)
-        public ResponseEntity<ErrorResponse> handleInvalidJson(HttpMessageNotReadableException ex) {
-                log.warn("Malformed JSON request");
-                return ResponseEntity.badRequest()
-                                .body(ErrorResponse.builder()
-                                                .error("INVALID_REQUEST")
-                                                .message("Malformed JSON or invalid data")
-                                                .build());
-        }
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    ResponseEntity<ErrorResponse> staleWrite(ObjectOptimisticLockingFailureException ex) {
+        return build(HttpStatus.CONFLICT, "CONFLICT", "The record was changed by someone else, reload and retry");
+    }
 
-        @ExceptionHandler(DataIntegrityViolationException.class)
-        public ResponseEntity<ErrorResponse> handleDatabaseError(DataIntegrityViolationException ex) {
-                log.error("Database error");
-                return ResponseEntity.status(HttpStatus.CONFLICT)
-                                .body(ErrorResponse.builder()
-                                                .error("DATA_CONFLICT")
-                                                .message("Database constraint violation")
-                                                .build());
-        }
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    ResponseEntity<ErrorResponse> integrity(DataIntegrityViolationException ex) {
+        log.warn("Data integrity violation: {}", ex.getMostSpecificCause().getMessage());
+        return build(HttpStatus.CONFLICT, "DATA_CONFLICT", "Database constraint violation");
+    }
 
-        @ExceptionHandler(JwtException.class)
-        public ResponseEntity<ErrorResponse> handleJwt(JwtException ex) {
-                log.warn("JWT error");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                                .body(ErrorResponse.builder()
-                                                .error("INVALID_TOKEN")
-                                                .message("JWT token is invalid or expired")
-                                                .build());
-        }
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ErrorResponse> unexpected(Exception ex) {
+        log.error("Unhandled exception", ex);
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Something went wrong");
+    }
 
-        @ExceptionHandler(IllegalArgumentException.class)
-        public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
-                log.warn("Illegal argument: {}", ex.getMessage());
-                return ResponseEntity.badRequest()
-                                .body(ErrorResponse.builder()
-                                                .error("BAD_REQUEST")
-                                                .message(ex.getMessage())
-                                                .build());
-        }
+    private static ResponseEntity<ErrorResponse> build(HttpStatus status, String code, String message) {
+        return ResponseEntity.status(status).body(ErrorResponse.of(code, message));
+    }
 
-        @ExceptionHandler(Exception.class)
-        public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
-                log.error("Unhandled exception occurred", ex);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                                .body(ErrorResponse.builder()
-                                                .error("INTERNAL_ERROR")
-                                                .message("Something went wrong")
-                                                .build());
-        }
+    private static String codeOf(HttpStatusCode status) {
+        HttpStatus s = HttpStatus.resolve(status.value());
+        return s == null ? "ERROR" : s.name();
+    }
 }

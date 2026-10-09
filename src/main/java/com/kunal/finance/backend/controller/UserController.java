@@ -1,10 +1,9 @@
 package com.kunal.finance.backend.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,88 +11,70 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.kunal.finance.backend.dto.MessageResponse;
-import com.kunal.finance.backend.dto.UserRequest;
-import com.kunal.finance.backend.dto.UserResponse;
+import com.kunal.finance.backend.dto.Dtos.MessageResponse;
+import com.kunal.finance.backend.dto.Dtos.PaginatedResponse;
+import com.kunal.finance.backend.dto.Dtos.UserRequest;
+import com.kunal.finance.backend.dto.Dtos.UserResponse;
 import com.kunal.finance.backend.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Tag(name="User Management", description="Endpoints for managing users (Admin only)")
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "User Management", description = "Admin only. The first admin comes from BOOTSTRAP_ADMIN_* environment variables.")
 public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("hasRole('ADMIN')") // this must be disabled for creating admin user for the first time and should be enabled later
     @PostMapping
-    @Operation(summary = "Create a new user (Admin only)", description = "Creates a new user with the specified details. This endpoint is intended for creating the first admin user and should be protected or removed after initial setup.")
-    public ResponseEntity<UserResponse> createUser(@Valid @RequestBody UserRequest request) {
-        UserResponse response = userService.createUser(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @Operation(summary = "Create a user")
+    public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request, Authentication auth) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request, auth.getName()));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
-    @Operation(summary = "Get all users (Admin only)", description = "Retrieves a list of all users in the system. This endpoint is restricted to admin users.")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    @Operation(summary = "List users (paginated)")
+    public ResponseEntity<PaginatedResponse<UserResponse>> list(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return ResponseEntity.ok(userService.list(page, size));
     }
-    
-    @PreAuthorize("hasRole('ADMIN')")
+
     @GetMapping("/{id}")
-    @Operation(summary = "Get user by ID (Admin only)", description = "Retrieves the details of a specific user by their ID. This endpoint is restricted to admin users.")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    @Operation(summary = "Get a user")
+    public ResponseEntity<UserResponse> get(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.get(id));
     }
-    
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}/deactivate")
-    @Operation(summary = "Deactivate a user (Admin only)", description = "Deactivates the user with the specified ID. This endpoint is restricted to admin users.")
-    public ResponseEntity<MessageResponse> deactivateUser(@PathVariable Long id) {
-
-        String message = userService.deactivateUser(id);
-
-        return ResponseEntity.ok(
-                MessageResponse.builder()
-                        .status("SUCCESS")
-                        .message(message)
-                        .build());
+    @Operation(summary = "Deactivate a user", description = "Takes effect immediately: existing tokens stop working because the active flag is checked on every request. You cannot deactivate yourself.")
+    public ResponseEntity<MessageResponse> deactivate(@PathVariable Long id, Authentication auth) {
+        return ok(userService.deactivate(id, auth.getName()));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}/activate")
-    @Operation(summary = "Activate a user (Admin only)", description = "Activates the user with the specified ID. This endpoint is restricted to admin users.")
-    public ResponseEntity<MessageResponse> activateUser(@PathVariable Long id) {
-
-        String message = userService.activateUser(id);
-
-        return ResponseEntity.ok(
-                MessageResponse.builder()
-                        .status("SUCCESS")
-                        .message(message)
-                        .build());
+    @Operation(summary = "Activate a user")
+    public ResponseEntity<MessageResponse> activate(@PathVariable Long id, Authentication auth) {
+        return ok(userService.activate(id, auth.getName()));
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a user (Admin only)", description = "Deletes the user with the specified ID. This endpoint is restricted to admin users.")
-    public ResponseEntity<MessageResponse> deleteUser(@PathVariable Long id) {
+    @Operation(summary = "Delete a user", description = "Refused for yourself and for users who own financial records (deactivate instead).")
+    public ResponseEntity<MessageResponse> delete(@PathVariable Long id, Authentication auth) {
+        return ok(userService.delete(id, auth.getName()));
+    }
 
-        String message = userService.deleteUser(id);
-
-        return ResponseEntity.ok(
-                MessageResponse.builder()
-                        .status("SUCCESS")
-                        .message(message)
-                        .build());
+    private static ResponseEntity<MessageResponse> ok(String message) {
+        return ResponseEntity.ok(new MessageResponse("SUCCESS", message));
     }
 }

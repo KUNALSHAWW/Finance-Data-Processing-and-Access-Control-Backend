@@ -2,12 +2,15 @@ package com.kunal.finance.backend.security;
 
 import java.io.IOException;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,47 +23,32 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
 
+    /** Request attribute read by the 401 entry point so the client learns why the token was refused. */
+    public static final String AUTH_ERROR = "app.auth.error";
+
     private final JwtUtil jwtUtil;
     private final CustomUserDetailsService userDetailsService;
 
-   @Override
-protected void doFilterInternal(HttpServletRequest request,
-        HttpServletResponse response,
-        FilterChain filterChain)
-        throws ServletException, IOException {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
 
-    String authHeader = request.getHeader("Authorization");
-
-    if (authHeader != null && authHeader.startsWith("Bearer ")) {
-
-        String token = authHeader.substring(7);
-
-        try {
-            if (jwtUtil.validateToken(token)) {
-
-                String email = jwtUtil.extractEmail(token);
-
-                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
-
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-
-                    log.debug("Authenticated user: {} with authorities: {}", email, userDetails.getAuthorities());
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith("Bearer ")) {
+            try {
+                String email = jwtUtil.extractEmail(header.substring(7));
+                UserDetails user = userDetailsService.loadUserByUsername(email);
+                if (user.isEnabled()) {
+                    SecurityContextHolder.getContext().setAuthentication(
+                            new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+                } else {
+                    request.setAttribute(AUTH_ERROR, "Account is disabled");
                 }
+            } catch (JwtException | IllegalArgumentException | UsernameNotFoundException e) {
+                log.debug("Rejected bearer token: {}", e.getMessage());
+                request.setAttribute(AUTH_ERROR, "Token is invalid or expired");
             }
-        } catch (Exception e) {
-            log.warn("JWT authentication failed: {}", e.getMessage());
         }
+        chain.doFilter(request, response);
     }
-
-    filterChain.doFilter(request, response);
-}
 }
