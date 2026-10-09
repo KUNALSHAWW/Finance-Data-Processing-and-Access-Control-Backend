@@ -208,6 +208,7 @@ h3.sec { margin: 24px 0 10px; }
 .steps { display: grid; gap: 14px; counter-reset: s; }
 .step { padding: 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
 .step h4 { margin: 0 0 6px; } .step p { color: var(--muted); }
+.step > .btn { margin-bottom: 12px; }
 
 .skel { background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 37%, var(--surface-2) 63%); background-size: 400% 100%; animation: shimmer 1.3s ease infinite; border-radius: 8px; }
 .skel.line { height: 16px; margin: 10px 0; } .skel.block-s { height: 74px; }

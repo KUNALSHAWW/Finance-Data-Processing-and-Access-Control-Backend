@@ -297,6 +297,7 @@
       if (e.key === 'ArrowDown') { active = Math.min(active + 1, shown.length - 1); mark(); e.preventDefault(); }
       else if (e.key === 'ArrowUp') { active = Math.max(active - 1, 0); mark(); e.preventDefault(); }
       else if (e.key === 'Enter') { e.preventDefault(); if (shown[active]) go(shown[active]); }
+      else if (e.key === 'Escape') { e.preventDefault(); dlg.close(); } // a search field would otherwise just clear its text
     });
     dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
     document.addEventListener('keydown', (e) => {
