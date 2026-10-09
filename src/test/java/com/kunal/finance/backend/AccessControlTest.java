@@ -60,6 +60,14 @@ class AccessControlTest extends IntegrationTestBase {
     }
 
     @Test
+    void meReturnsTheCallersRole() throws Exception {
+        call(HttpMethod.GET, "/api/auth/me", token(ANALYST), null)
+                .andExpect(status().isOk()).andExpect(jsonPath("$.email").value(ANALYST))
+                .andExpect(jsonPath("$.role").value("ANALYST"));
+        call(HttpMethod.GET, "/api/auth/me", null, null).andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void missingTokenIs401WithJsonBody() throws Exception {
         call(HttpMethod.GET, "/api/records", null, null)
                 .andExpect(status().isUnauthorized())

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kunal.finance.backend.demo.DemoGuard;
 import com.kunal.finance.backend.dto.Dtos.FinancialRecordRequest;
 import com.kunal.finance.backend.dto.Dtos.FinancialRecordResponse;
 import com.kunal.finance.backend.dto.Dtos.PaginatedResponse;
@@ -37,12 +38,14 @@ import lombok.RequiredArgsConstructor;
 public class FinancialRecordController {
 
     private final FinancialRecordService recordService;
+    private final DemoGuard demo;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create a record", description = "Appends a CREATED entry to the audit ledger in the same transaction.")
     public ResponseEntity<FinancialRecordResponse> create(@Valid @RequestBody FinancialRecordRequest request,
             Authentication auth) {
+        demo.assertRecordCapacity();
         return ResponseEntity.status(HttpStatus.CREATED).body(recordService.create(request, auth.getName()));
     }
 

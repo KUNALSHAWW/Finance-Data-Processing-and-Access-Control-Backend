@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Finance Ledger - tamper-evident finance API</title>
+  <meta name="description" content="A role-based finance API where every change goes into a hash-chained audit ledger. Edit the database behind its back and one call shows exactly which row was touched. Live demo, no sign-up.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self' http://localhost:8080 https://*.onrender.com; base-uri 'none'; form-action 'none'">
+  <meta name="theme-color" content="#2f5bea">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f5bea'/%3E%3Cpath d='M9 16h5m4 0h5M14 12a4 4 0 0 0 0 8m4-8a4 4 0 0 1 0 8' stroke='white' stroke-width='2.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script src="theme.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="print.css" media="print">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div id="progress" role="presentation"></div>
+
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href="#top" aria-label="Finance Ledger, back to top"><span class="logo" aria-hidden="true">&#8734;</span> Finance Ledger</a>
+      <nav id="nav" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#try">Live demo</a>
+        <a href="#tech">Under the hood</a>
+        <a href="#faq">FAQ</a>
+        <a id="repoLink" href="#" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+      <div class="tools">
+        <span id="apiStatus" class="chip wake" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="apiStatusText">API waking up</span></span>
+        <button id="searchBtn" class="icon-btn" type="button" aria-label="Search this site (press /)"><span aria-hidden="true">&#9906;</span><kbd>/</kbd></button>
+        <button id="themeBtn" class="icon-btn" type="button" aria-label="Switch to dark mode"><span id="themeIcon" aria-hidden="true">&#9790;</span></button>
+        <button id="menuBtn" class="icon-btn menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span aria-hidden="true">&#9776;</span></button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <section class="hero" id="top">
+      <div class="wrap">
+        <p class="eyebrow">Spring Boot &middot; Java 21 &middot; JWT + RBAC &middot; hash-chained audit ledger</p>
+        <h1>Prove your finance data wasn't quietly changed.</h1>
+        <p class="lead">A role-based finance API where every change is written to a hash-chained audit ledger. Edit the database behind its back and one call shows exactly which row was touched.</p>
+        <div class="cta">
+          <a class="btn primary" href="#try">Try the live demo</a>
+          <a class="btn" id="repoLink2" href="#" target="_blank" rel="noopener">Read the code</a>
+        </div>
+        <p class="fine">No sign-up. The sample data is fake and resets itself every 30 minutes.</p>
+      </div>
+    </section>
+
+    <section id="how" class="section">
+      <div class="wrap">
+        <h2>How it works</h2>
+        <div class="chain" aria-hidden="true">
+          <div class="block"><b>#41</b><code>a3f9&hellip;</code></div><span class="link"></span>
+          <div class="block"><b>#42</b><code>7c1e&hellip;</code></div><span class="link"></span>
+          <div class="block bad"><b>#43</b><code>edited</code></div><span class="link broken"></span>
+          <div class="block"><b>#44</b><code>e02b&hellip;</code></div>
+        </div>
+        <div class="grid3">
+          <article class="card"><h3><span class="num">1</span> Every write is chained</h3><p>Each audit entry stores the hash of the entry before it and a digest of the row's new state, in the same transaction as the change itself.</p></article>
+          <article class="card"><h3><span class="num">2</span> Someone edits the database</h3><p>A raw SQL <code>UPDATE</code> skips the API, so no audit entry is written. Hiding a large expense takes one line.</p></article>
+          <article class="card"><h3><span class="num">3</span> Verify points at the row</h3><p>Recomputing the chain and comparing every live row with its last audited digest names the exact record that no longer matches.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="try" class="section alt">
+      <div class="wrap">
+        <h2>Live demo</h2>
+        <p class="sub">Pick a role, look around, then use the <strong>Tamper Lab</strong> (Admin) to break the data on purpose and watch the ledger catch it.</p>
+        <div id="console" class="console" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="tech" class="section">
+      <div class="wrap">
+        <h2>Under the hood</h2>
+        <div class="grid3">
+          <article class="card"><h3>Access control</h3><p>JWT with BCrypt, account lockout after 5 failures, and roles re-read from the database on every request, so deactivating a user takes effect immediately. Every cell of the role matrix is a test.</p></article>
+          <article class="card"><h3>Correct money</h3><p><code>BigDecimal</code> and <code>DECIMAL(19,2)</code>, validated amounts, totals computed by the database with <code>GROUP BY</code>, optimistic locking on edits.</p></article>
+          <article class="card"><h3>Explainable anomalies</h3><p>Modified z-score on median and MAD per category. Each flag says why, and a huge outlier can't hide itself the way it does with mean and standard deviation.</p></article>
+        </div>
+        <h3 class="mt">Call it yourself</h3>
+        <p class="sub">The demo accounts are public. Replace <code>&lt;token&gt;</code> with the token from the login response.</p>
+        <div class="code"><pre id="curl1"></pre><button type="button" class="copy" data-copy-target="curl1">Copy</button></div>
+        <div class="code"><pre id="curl2"></pre><button type="button" class="copy" data-copy-target="curl2">Copy</button></div>
+        <div class="note"><strong>What it does not do.</strong> This is tamper-<em>evidence</em>, not tamper-proofing. Someone who rebuilds the whole chain consistently will pass verification unless the head hash is stored somewhere they can't edit. Production would also revoke <code>UPDATE</code> and <code>DELETE</code> on the audit table.</div>
+      </div>
+    </section>
+
+    <section id="faq" class="section alt">
+      <div class="wrap narrow">
+        <h2>FAQ</h2>
+        <details class="faq" id="faq-data"><summary>Is this real data?</summary><p>No. It is synthetic and the sample accounts are public on purpose. The data resets itself every 30 minutes, and the Admin can restore it any time from the Tamper Lab.</p></details>
+        <details class="faq" id="faq-wake"><summary>Why did the first load take a while?</summary><p>The API runs on a free host that sleeps after 15 minutes without traffic. This page wakes it as soon as you arrive (the chip in the header shows progress), which usually takes under a minute.</p></details>
+        <details class="faq" id="faq-db"><summary>What database does the live demo use?</summary><p>An in-memory database seeded at every start, running the same Flyway migration as production, because free hosting has no durable database. The project itself targets MySQL 8 and is also run end to end against it with Docker Compose.</p></details>
+        <details class="faq" id="faq-bypass"><summary>Can someone with database access beat this?</summary><p>Yes, if they recompute the entire chain. Publishing the head hash somewhere they can't edit, and revoking <code>UPDATE</code>/<code>DELETE</code> on the audit table from the application's database user, closes that gap.</p></details>
+        <details class="faq" id="faq-zscore"><summary>Why median and MAD for anomalies?</summary><p>A single huge outlier inflates the standard deviation enough to hide itself: with 7 samples its z-score can never exceed 2.27. Median and MAD aren't distorted that way. The cutoff of 3.5 is the one recommended by Iglewicz and Hoaglin.</p></details>
+        <details class="faq" id="faq-track"><summary>What do you track?</summary><p>Only the <code>utm_*</code> labels of a tagged link, so the owner can tell which application link was opened. No cookies, no IP addresses, no identifiers. Your theme choice is stored in your browser. You can opt out from the notice at the bottom.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap foot">
+      <p>Built by Kunal Kumar Shaw. Last updated <time id="lastUpdated" datetime="">&hellip;</time>.</p>
+      <p class="links"><a id="linkGithub" href="#" target="_blank" rel="noopener">GitHub</a> <a id="linkLinkedin" href="#" target="_blank" rel="noopener">LinkedIn</a> <a id="linkPortfolio" href="#" target="_blank" rel="noopener">Portfolio</a> <a href="#" id="printBtn">Print this page</a></p>
+    </div>
+  </footer>
+
+  <a id="contactFab" class="fab" href="#">Contact</a>
+  <button id="toTop" class="fab round" type="button" aria-label="Back to top" hidden>&uarr;</button>
+
+  <div id="cookie" class="cookie" role="region" aria-label="Privacy notice" hidden>
+    <p>No cookies here. Your theme choice lives in your browser, and a tagged link reports only its <code>utm_*</code> labels, never personal data.</p>
+    <div class="row"><button type="button" class="btn small primary" id="cookieOk">OK</button><button type="button" class="btn small" id="cookieNo">Don't count my visit</button></div>
+  </div>
+
+  <dialog id="searchDlg" class="dlg" aria-label="Search">
+    <form method="dialog" class="search-form">
+      <input id="searchInput" type="search" placeholder="Search: ledger, roles, anomalies, FAQ&hellip;" aria-label="Search this site" autocomplete="off">
+      <ul id="searchList" role="listbox" aria-label="Results"></ul>
+      <p class="fine">Enter to open, Esc to close</p>
+    </form>
+  </dialog>
+
+  <dialog id="confirmDlg" class="dlg" aria-labelledby="confirmTitle">
+    <form method="dialog">
+      <h3 id="confirmTitle"></h3>
+      <p id="confirmBody"></p>
+      <div class="row end"><button id="confirmCancel" class="btn">Cancel</button><button id="confirmOk" class="btn primary">Confirm</button></div>
+    </form>
+  </dialog>
+
+  <div id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

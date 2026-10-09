@@ -62,6 +62,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return build(HttpStatus.TOO_MANY_REQUESTS, "TOO_MANY_ATTEMPTS", ex.getMessage());
     }
 
+    @ExceptionHandler(DemoRestrictionException.class)
+    ResponseEntity<ErrorResponse> demoRestricted(DemoRestrictionException ex) {
+        return build(HttpStatus.FORBIDDEN, "DEMO_RESTRICTED", ex.getMessage());
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<ErrorResponse> accessDenied(AccessDeniedException ex) {
         return build(HttpStatus.FORBIDDEN, "FORBIDDEN", "You do not have permission to perform this action");

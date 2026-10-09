@@ -29,6 +29,9 @@ public final class Dtos {
     public record AuthRequest(@NotBlank String email, @NotBlank String password) {
     }
 
+    public record MeResponse(String email, String role) {
+    }
+
     public record AuthResponse(String token, String tokenType, long expiresInMs) {
     }
 
@@ -48,9 +51,9 @@ public final class Dtos {
 
     // ---- records ----
     public record FinancialRecordRequest(
-            @NotNull @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
+            @NotNull(message = "Amount is required") @DecimalMin(value = "0.01", message = "Amount must be at least 0.01")
             @Digits(integer = 15, fraction = 2, message = "Amount allows at most 2 decimal places") BigDecimal amount,
-            @NotNull RecordType type,
+            @NotNull(message = "Type is required") RecordType type,
             @Size(max = 100) String category,
             @PastOrPresent(message = "Date cannot be in the future") LocalDate date,
             @Size(max = 500) String description) {
@@ -79,6 +82,22 @@ public final class Dtos {
     }
 
     public record Insights(String method, int windowMonths, List<Anomaly> anomalies) {
+    }
+
+    // ---- public / demo ----
+    public record DemoAccount(String role, String email, String password) {
+    }
+
+    public record PublicConfig(boolean demo, List<DemoAccount> accounts) {
+    }
+
+    public record VisitRequest(@Size(max = 100) String source, @Size(max = 100) String medium,
+            @Size(max = 100) String campaign, @Size(max = 100) String content, @Size(max = 100) String term,
+            @Size(max = 100) String path) {
+    }
+
+    public record TamperResult(Long recordId, String category, BigDecimal originalAmount, BigDecimal newAmount,
+            String sql) {
     }
 
     // ---- misc ----

@@ -1,0 +1,19 @@
+/* One-page printout of the project pitch: no chrome, no interactive demo, URLs written out. */
+@page { margin: 16mm; }
+:root, [data-theme="dark"] {
+  --bg: #fff; --surface: #fff; --surface-2: #fff; --text: #000; --muted: #333; --border: #bbb;
+  --accent: #000; --accent-ink: #fff; --accent-soft: #fff; --ok: #000; --bad: #000; --warn: #000;
+  --ok-bg: #fff; --bad-bg: #fff; --warn-bg: #fff; --shadow: none;
+}
+body { font-size: 11pt; line-height: 1.45; background: #fff; color: #000; }
+.skip-link, #progress, .site-header, .fab, .cookie, dialog, #toasts, #try, .cta, .copy, .site-footer .links, .chain { display: none !important; }
+.hero { padding: 0 0 12pt; background: none; }
+.section, .section.alt { padding: 12pt 0; background: none; }
+.wrap, .narrow { width: 100%; }
+h1 { font-size: 22pt; } h2 { font-size: 15pt; margin-top: 8pt; }
+.card, details.faq { box-shadow: none; border: 1px solid #999; break-inside: avoid; }
+.grid3 { grid-template-columns: repeat(3, 1fr); gap: 8pt; }
+.code pre { border: 1px solid #999; white-space: pre-wrap; word-break: break-all; padding: 6pt; }
+a { color: #000; text-decoration: none; }
+a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; word-break: break-all; }
+nav a::after, .brand::after { content: none !important; }

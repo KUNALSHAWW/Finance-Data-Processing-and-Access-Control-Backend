@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kunal.finance.backend.demo.DemoGuard;
 import com.kunal.finance.backend.dto.Dtos.AuthRequest;
 import com.kunal.finance.backend.dto.Dtos.AuthResponse;
 import com.kunal.finance.backend.entity.User;
@@ -27,6 +28,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final DemoGuard demo;
 
     @Value("${app.security.max-failed-attempts:5}")
     private int maxFailedAttempts;
@@ -41,11 +43,15 @@ public class AuthService {
                 .orElseThrow(() -> new BadCredentialsException("Invalid credentials"));
 
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
+        // The public demo accounts are public by design, so lockout would only let strangers lock everyone out.
+        if (!demo.enabled() && user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
             throw new TooManyAttemptsException("Too many failed attempts, try again in a few minutes");
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            if (demo.enabled()) {
+                throw new BadCredentialsException("Invalid credentials");
+            }
             user.setFailedAttempts(user.getFailedAttempts() + 1);
             if (user.getFailedAttempts() >= maxFailedAttempts) {
                 user.setLockedUntil(now.plusMinutes(lockMinutes));

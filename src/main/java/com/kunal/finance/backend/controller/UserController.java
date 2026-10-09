@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.kunal.finance.backend.demo.DemoGuard;
 import com.kunal.finance.backend.dto.Dtos.MessageResponse;
 import com.kunal.finance.backend.dto.Dtos.PaginatedResponse;
 import com.kunal.finance.backend.dto.Dtos.UserRequest;
@@ -35,10 +36,12 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final DemoGuard demo;
 
     @PostMapping
     @Operation(summary = "Create a user")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserRequest request, Authentication auth) {
+        demo.assertUserWritesAllowed();
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request, auth.getName()));
     }
 
@@ -59,18 +62,21 @@ public class UserController {
     @PutMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate a user", description = "Takes effect immediately: existing tokens stop working because the active flag is checked on every request. You cannot deactivate yourself.")
     public ResponseEntity<MessageResponse> deactivate(@PathVariable Long id, Authentication auth) {
+        demo.assertUserWritesAllowed();
         return ok(userService.deactivate(id, auth.getName()));
     }
 
     @PutMapping("/{id}/activate")
     @Operation(summary = "Activate a user")
     public ResponseEntity<MessageResponse> activate(@PathVariable Long id, Authentication auth) {
+        demo.assertUserWritesAllowed();
         return ok(userService.activate(id, auth.getName()));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete a user", description = "Refused for yourself and for users who own financial records (deactivate instead).")
     public ResponseEntity<MessageResponse> delete(@PathVariable Long id, Authentication auth) {
+        demo.assertUserWritesAllowed();
         return ok(userService.delete(id, auth.getName()));
     }
 
